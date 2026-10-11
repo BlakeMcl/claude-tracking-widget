@@ -1,0 +1,54 @@
+name: ClaudeUsage
+options:
+  bundleIdPrefix: com.blakemcleod.claudeusage
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  ClaudeUsageWidgetPkg:
+    path: .
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+    GENERATE_INFOPLIST_FILE: YES
+targets:
+  ClaudeUsageHost:
+    type: application
+    platform: macOS
+    sources: [Host]
+    dependencies:
+      - package: ClaudeUsageWidgetPkg
+        product: ClaudeUsageCore
+      - target: ClaudeUsageWidget
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blakemcleod.claudeusage.host
+        INFOPLIST_KEY_LSUIElement: YES
+        ENABLE_APP_SANDBOX: NO
+        ENABLE_HARDENED_RUNTIME: NO
+  ClaudeUsageWidget:
+    type: app-extension
+    platform: macOS
+    sources: [Widget]
+    dependencies:
+      - package: ClaudeUsageWidgetPkg
+        product: ClaudeUsageCore
+    entitlements:
+      path: Widget/ClaudeUsageWidget.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        # Dev-only: lets the sandboxed widget read the collector's snapshot.
+        # Replace with an App Group container once a signing team is available.
+        com.apple.security.temporary-exception.files.home-relative-path.read-only: /Library/Application Support/ClaudeUsageWidget/
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blakemcleod.claudeusage.host.widget
+        INFOPLIST_KEY_CFBundleDisplayName: Claude Usage
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: Claude Usage
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
